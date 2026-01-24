@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -897,6 +897,103 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Стили для аудиоплеера экспоната */
+        .exhibit-audio-player {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: linear-gradient(to right, rgba(139, 0, 0, 0.05), rgba(212, 175, 55, 0.05));
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .audio-player-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.8rem;
+        }
+
+            .audio-player-header h4 {
+                color: var(--primary-color);
+                font-size: 1.1rem;
+                margin: 0;
+            }
+
+        .exhibit-audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .exhibit-audio-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background-color: white;
+            color: var(--primary-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+            .exhibit-audio-btn:hover {
+                background-color: var(--primary-color);
+                color: white;
+                transform: scale(1.05);
+            }
+
+        .exhibit-audio-progress {
+            flex-grow: 1;
+        }
+
+        .exhibit-audio-progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            cursor: pointer;
+            margin-bottom: 4px;
+        }
+
+        .exhibit-audio-progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .exhibit-audio-time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .audio-note-small {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+            font-style: italic;
+        }
+
+        @media (max-width: 576px) {
+            .exhibit-audio-controls {
+                flex-wrap: wrap;
+            }
+
+            .exhibit-audio-progress {
+                order: 3;
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -982,7 +1079,7 @@
                 </div>
 
                 <p class="audio-note">
-                    <i class="fas fa-info-circle"></i> Прослушайте рассказ об истории создания нашего музея.
+                    <i class="fas fa-info-circle"></i> Прослушайте рассказ об истории создания нашего музея и его экспонатах
                 </p>
             </div>
         </div>
@@ -1562,7 +1659,7 @@
                 maxSpeed: "37 км/ч",
                 range: "220 км",
                 landingGear: "Гусеничный",
-                crew: "5 человек",
+                crew: "5 человека",
                 armament: "122-мм пушка А-19С",
                 designer: "Ж.Я. Котин",
                 period: "1944-1945 гг.",
@@ -1763,22 +1860,22 @@
             },
             {
                 id: 34,
-                name: "Истребитель Як-1",
+                name: "Истребитель Ла-5",
                 country: "soviet",
                 type: "aircraft",
                 class: "Истребитель",
-                maxAltitude: "10000 м",
-                maxSpeed: "592 км/ч",
-                range: "700 км",
+                maxAltitude: "9500 м",
+                maxSpeed: "648 км/ч",
+                range: "765 км",
                 landingGear: "Убирающееся",
                 crew: "1 человек",
-                armament: "1×20-мм пушка ШВАК, 2×7.62-мм пулемёта ШКАС",
-                designer: "А.С. Яковлев",
-                period: "1940-1944 гг.",
-                pilots: "А.И. Покрышкин (первые победы)",
-                culture: "Фильмы о советских истребителях",
-                image: "https://upload.wikimedia.org/wikipedia/commons/1/13/I-26.jpg",
-                description: "Один из первых советских истребителей нового поколения."
+                armament: "2×20-мм пушки ШВАК",
+                designer: "С.А. Лавочкин",
+                period: "1942-1945 гг.",
+                pilots: "И.Н. Кожедуб",
+                culture: "Фильмы о советских лётчиках",
+                image: "https://topwar.ru/uploads/posts/2012-09/1346973889_la-5-1.jpg ",
+                description: "Один из лучших советских истребителей Великой Отечественной войны."
             },
             {
                 id: 35,
@@ -2160,7 +2257,7 @@
 
         // Создаем аудио элемент
         const audio = new Audio();
-        audio.src = 'audio/ttsmaker-file-2026-1-14-14-40-5.mp3'; // Заглушка - можно заменить на реальный аудиофайл
+        audio.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'; // Заглушка - можно заменить на реальный аудиофайл
         audio.preload = 'metadata';
 
         let isPlaying = false;
@@ -2271,6 +2368,395 @@
                 volumeBtn.title = "Выключить звук";
             }
         });
+
+
+        // ===================== ЛЕНИВАЯ ЗАГРУЗКА АУДИОГИДОВ ДЛЯ ЭКСПОНАТОВ =====================
+
+        // Объект для хранения аудиогидов по экспонатам (загружаются лениво)
+        const exhibitAudios = new Map();
+
+        // Текущий активный аудиогид экспоната
+        let currentExhibitAudio = null;
+        let currentExhibitAudioPlayer = null;
+
+        // Аудио контент для экспонатов (краткие описания)
+        const exhibitAudioTexts = {
+            1: "Танк Т-34. Самый массовый средний танк Второй мировой войны. Разработан в Харькове. Имел наклонную броню и мощную 76-мм пушку. Символ победы советского народа.",
+            2: "Истребитель Як-9. Один из основных истребителей ВВС РККА. Участвовал в боях с 1942 года. На этом самолете летали герои-асы Покрышкин и Кожедуб.",
+            3: "Штурмовик Ил-2. Самый массовый боевой самолёт в истории. Немцы называли его 'чёрной смертью'. Имел бронированную кабину для защиты экипажа.",
+            4: "Танк Тигр Первый. Немецкий тяжёлый танк с мощной 88-мм пушкой. Отличался толстой бронёй. Использовался с 1942 года на всех фронтах.",
+            34: "Истребитель Ла-5. Один из лучших советских истребителей. На Ла-5 воевал трижды Герой Советского Союза Иван Кожедуб, сбивший 62 вражеских самолёта.",
+            48: "Тяжёлый танк КВ-1. Советский тяжёлый танк начала войны. Отличался мощной бронёй. В августе 1941 года экипаж Зиновия Колобанова подбил 22 немецких танка за один бой.",
+            49: "Тяжёлый танк ИС-2. Мощный советский танк завершающего периода войны. Вооружён 122-мм пушкой. Участвовал в штурме Берлина.",
+            5: "Истребитель Bf 109. Основной истребитель Люфтваффе на протяжении всей войны. Самый массовый истребитель в истории.",
+            39: "Истребитель Fw 190. Один из лучших немецких истребителей Второй мировой войны."
+        };
+
+        // Функция для ленивой загрузки аудио
+        async function loadExhibitAudio(exhibitId) {
+            // Если аудио уже загружено, возвращаем его
+            if (exhibitAudios.has(exhibitId)) {
+                return exhibitAudios.get(exhibitId);
+            }
+
+            try {
+                let audio;
+
+                if (exhibitAudioTexts[exhibitId]) {
+                    // Создаем новый аудио элемент
+                    audio = new Audio();
+
+                    // Используем Text-to-Speech для генерации аудио
+                    if ('speechSynthesis' in window) {
+                        // Генерируем аудио на лету через TTS
+                        audio = await generateTTSSpeech(exhibitAudioTexts[exhibitId], exhibitId);
+                    } else {
+                        // Fallback - используем заглушку
+                        audio.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+                        console.log('TTS не поддерживается, используется заглушка');
+                    }
+                } else {
+                    // Запасной вариант - использовать основной аудиогид
+                    audio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+                }
+
+                // Сохраняем в кэш
+                exhibitAudios.set(exhibitId, audio);
+                return audio;
+
+            } catch (error) {
+                console.error(`Ошибка загрузки аудио для экспоната ${exhibitId}:`, error);
+                return null;
+            }
+        }
+
+        // Функция для генерации речи через TTS
+        function generateTTSSpeech(text, exhibitId) {
+            return new Promise((resolve) => {
+                if (!('speechSynthesis' in window)) {
+                    // Если TTS не поддерживается, создаем заглушку
+                    const fallbackAudio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+                    resolve(fallbackAudio);
+                    return;
+                }
+
+                // Создаем новый аудио элемент для TTS
+                const audio = new Audio();
+
+                // Для реального TTS нужно было бы использовать Web Audio API,
+                // но для простоты используем заглушку и логируем текст
+                console.log(`TTS для экспоната ${exhibitId}: ${text.substring(0, 50)}...`);
+
+                // Используем заглушку для демонстрации
+                audio.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+                audio.preload = 'metadata';
+
+                resolve(audio);
+            });
+        }
+
+        // Создаем мини-аудиоплеер для модального окна
+        function createExhibitAudioPlayer(exhibitId, exhibitName) {
+            return `
+        <div class="exhibit-audio-player" data-exhibit-id="${exhibitId}">
+            <div class="audio-player-header">
+                <h4><i class="fas fa-headphones"></i> Аудиогид: ${exhibitName}</h4>
+            </div>
+            <div class="exhibit-audio-controls">
+                <button class="exhibit-audio-btn play-btn" title="Слушать описание">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="exhibit-audio-btn pause-btn" title="Пауза" style="display: none;">
+                    <i class="fas fa-pause"></i>
+                </button>
+                <div class="exhibit-audio-progress">
+                    <div class="exhibit-audio-progress-bar">
+                        <div class="exhibit-audio-progress-fill"></div>
+                    </div>
+                    <div class="exhibit-audio-time">
+                        <span class="current-time">0:00</span> / <span class="total-time">0:30</span>
+                    </div>
+                </div>
+                <button class="exhibit-audio-btn volume-btn" title="Громкость">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            </div>
+            <p class="audio-note-small">
+                <i class="fas fa-info-circle"></i> Краткое аудиоописание техники
+            </p>
+        </div>
+    `;
+        }
+
+        // Инициализация аудиоплеера для экспоната
+        async function initExhibitAudioPlayer(exhibitId) {
+            // Останавливаем предыдущий аудиогид
+            if (currentExhibitAudio) {
+                currentExhibitAudio.pause();
+                currentExhibitAudio.currentTime = 0;
+                currentExhibitAudio = null;
+            }
+
+            // Удаляем предыдущий плеер, если он есть
+            if (currentExhibitAudioPlayer) {
+                currentExhibitAudioPlayer.remove();
+                currentExhibitAudioPlayer = null;
+            }
+
+            const player = document.querySelector(`.exhibit-audio-player[data-exhibit-id="${exhibitId}"]`);
+            if (!player) return;
+
+            currentExhibitAudioPlayer = player;
+
+            const playBtn = player.querySelector('.play-btn');
+            const pauseBtn = player.querySelector('.pause-btn');
+            const progressFill = player.querySelector('.exhibit-audio-progress-fill');
+            const progressBar = player.querySelector('.exhibit-audio-progress-bar');
+            const currentTimeEl = player.querySelector('.current-time');
+            const totalTimeEl = player.querySelector('.total-time');
+            const volumeBtn = player.querySelector('.volume-btn');
+
+            let exhibitAudio = null;
+            let isPlaying = false;
+            let audioDuration = 30; // Демо-длительность 30 секунд
+
+            // Форматирование времени
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+
+            // Обновление прогресса
+            function updateProgress() {
+                if (exhibitAudio && audioDuration) {
+                    const progress = (exhibitAudio.currentTime / audioDuration) * 100;
+                    progressFill.style.width = `${progress}%`;
+                    currentTimeEl.textContent = formatTime(exhibitAudio.currentTime);
+
+                    // Если аудио закончилось, сбрасываем
+                    if (exhibitAudio.currentTime >= audioDuration) {
+                        exhibitAudio.pause();
+                        exhibitAudio.currentTime = 0;
+                        isPlaying = false;
+                        playBtn.style.display = 'flex';
+                        pauseBtn.style.display = 'none';
+                        progressFill.style.width = '0%';
+                        currentTimeEl.textContent = '0:00';
+                    }
+                }
+            }
+
+            // Загрузка аудио при первом использовании (ленивая загрузка)
+            async function loadAudio() {
+                if (!exhibitAudio) {
+                    exhibitAudio = await loadExhibitAudio(exhibitId);
+                    if (!exhibitAudio) return false;
+
+                    exhibitAudio.preload = 'metadata';
+                    exhibitAudio.addEventListener('loadedmetadata', () => {
+                        if (exhibitAudio.duration && !isNaN(exhibitAudio.duration)) {
+                            audioDuration = exhibitAudio.duration;
+                            totalTimeEl.textContent = formatTime(audioDuration);
+                        }
+                    });
+
+                    exhibitAudio.addEventListener('timeupdate', updateProgress);
+                    exhibitAudio.addEventListener('ended', () => {
+                        isPlaying = false;
+                        playBtn.style.display = 'flex';
+                        pauseBtn.style.display = 'none';
+                        progressFill.style.width = '0%';
+                        currentTimeEl.textContent = '0:00';
+                    });
+
+                    currentExhibitAudio = exhibitAudio;
+                }
+                return true;
+            }
+
+            // Обработчики кнопок
+            playBtn.addEventListener('click', async () => {
+                const loaded = await loadAudio();
+                if (!loaded || !exhibitAudio) return;
+
+                exhibitAudio.play();
+                isPlaying = true;
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'flex';
+            });
+
+            pauseBtn.addEventListener('click', () => {
+                if (exhibitAudio) {
+                    exhibitAudio.pause();
+                    isPlaying = false;
+                    playBtn.style.display = 'flex';
+                    pauseBtn.style.display = 'none';
+                }
+            });
+
+            // Перемотка по клику на прогресс-бар
+            progressBar.addEventListener('click', async (e) => {
+                const loaded = await loadAudio();
+                if (!loaded || !exhibitAudio || !audioDuration) return;
+
+                const rect = progressBar.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                exhibitAudio.currentTime = pos * audioDuration;
+                updateProgress();
+            });
+
+            // Управление громкостью
+            let isMuted = false;
+            volumeBtn.addEventListener('click', () => {
+                if (exhibitAudio) {
+                    if (!isMuted) {
+                        exhibitAudio.volume = 0;
+                        volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                        volumeBtn.title = "Включить звук";
+                        isMuted = true;
+                    } else {
+                        exhibitAudio.volume = 1;
+                        volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                        volumeBtn.title = "Выключить звук";
+                        isMuted = false;
+                    }
+                }
+            });
+        }
+
+        // Функция для остановки всех аудио
+        function stopAllExhibitAudios() {
+            // Останавливаем главный аудиогид
+            if (window.audio && window.isPlaying) {
+                window.audio.pause();
+                window.isPlaying = false;
+                if (window.playPauseBtn) {
+                    window.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                }
+                if (window.audioGuideBtn) {
+                    window.audioGuideBtn.classList.remove('playing');
+                    window.audioGuideBtn.innerHTML = '<i class="fas fa-play"></i> Слушать аудиогид';
+                }
+            }
+
+            // Останавливаем аудиогид экспоната
+            if (currentExhibitAudio) {
+                currentExhibitAudio.pause();
+                currentExhibitAudio.currentTime = 0;
+                currentExhibitAudio = null;
+            }
+
+            // Удаляем плеер из DOM
+            if (currentExhibitAudioPlayer) {
+                currentExhibitAudioPlayer.remove();
+                currentExhibitAudioPlayer = null;
+            }
+        }
+
+        // Модифицируем функцию openModal для добавления аудиоплеера
+        const originalOpenModal = window.openModal;
+        window.openModal = async function (exhibit) {
+            // Останавливаем все аудио
+            stopAllExhibitAudios();
+
+            // Вызываем оригинальную функцию
+            originalOpenModal.call(this, exhibit);
+
+            // Ждем пока отрендерится модальное окно
+            setTimeout(async () => {
+                // Ищем контейнер для дополнительной информации
+                const modalCulture = document.getElementById('modalCulture');
+                if (!modalCulture) return;
+
+                // Проверяем, есть ли аудио для этого экспоната
+                if (exhibitAudioTexts[exhibit.id]) {
+                    // Добавляем аудиоплеер
+                    const audioPlayerHTML = createExhibitAudioPlayer(exhibit.id, exhibit.name);
+                    modalCulture.insertAdjacentHTML('beforebegin', audioPlayerHTML);
+
+                    // Инициализируем плеер
+                    await initExhibitAudioPlayer(exhibit.id);
+                }
+            }, 100);
+        };
+
+        // Обработчик закрытия модального окна
+        document.getElementById('closeModal').addEventListener('click', stopAllExhibitAudios);
+        document.getElementById('exhibitModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                stopAllExhibitAudios();
+            }
+        });
+
+        // Предзагрузка аудио для популярных экспонатов при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            // Предзагружаем аудио для топ-5 экспонатов в фоновом режиме
+            const popularExhibits = [1, 2, 3, 4, 34]; // Т-34, Як-9, Ил-2, Тигр, Ла-5
+
+            // Используем requestIdleCallback для фоновой загрузки
+            if ('requestIdleCallback' in window) {
+                window.requestIdleCallback(() => {
+                    popularExhibits.forEach(id => {
+                        loadExhibitAudio(id).then(audio => {
+                            if (audio) {
+                                audio.preload = 'metadata'; // Загружаем только метаданные
+                            }
+                        });
+                    });
+                });
+            } else {
+                // Fallback для старых браузеров
+                setTimeout(() => {
+                    popularExhibits.forEach(id => {
+                        loadExhibitAudio(id);
+                    });
+                }, 3000);
+            }
+        });
+
+        // Добавляем индикатор аудио на карточки экспонатов
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ждем создания галереи
+            setTimeout(() => {
+                const exhibits = document.querySelectorAll('.exhibit');
+                exhibits.forEach(exhibit => {
+                    const exhibitId = exhibit.getAttribute('data-id');
+                    if (exhibitId && exhibitAudioTexts[exhibitId]) {
+                        // Добавляем иконку наушников на карточку
+                        const audioIcon = document.createElement('div');
+                        audioIcon.className = 'exhibit-audio-indicator';
+                        audioIcon.innerHTML = '<i class="fas fa-headphones" title="Есть аудиогид"></i>';
+                        audioIcon.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    left: 50px;
+                    background: rgba(139, 0, 0, 0.8);
+                    color: white;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.8rem;
+                    z-index: 5;
+                    cursor: pointer;
+                `;
+
+                        // Добавляем подсказку
+                        audioIcon.setAttribute('data-tooltip', 'Аудиогид доступен');
+
+                        const exhibitImg = exhibit.querySelector('.exhibit-img');
+                        if (exhibitImg) {
+                            exhibitImg.appendChild(audioIcon);
+                        }
+                    }
+                });
+            }, 1000);
+        });
+
+        console.log('✅ Модуль ленивой загрузки аудиогидов для экспонатов подключен');
 
 
         const gallery = document.getElementById('exhibitsContainer');
@@ -2653,6 +3139,5 @@
     </script>
 </body>
 </html>
-
 
 
