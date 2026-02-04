@@ -2632,7 +2632,7 @@
                 if (!isExhibitAudioPlaying) {
                     const text = exhibitAudioTexts[exhibitId];
                     const success = ttsManager.speak(text, {
-                        rate: 0.9,
+                        rate: 1.5,
                         onStart: () => {
                             isExhibitAudioPlaying = true;
                             playStopBtn.innerHTML = '<i class="fas fa-stop"></i>';
@@ -3159,3 +3159,4 @@
         });
     </script>
 </body>
+
